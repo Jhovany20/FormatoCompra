@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago de Productos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: black;
+        }
+
+        header {
+            background-color: greenyellow;
+            color: gray;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 2rem;
+        }
+
+        .form-container {
+            background-color: white;
+            width: 50%;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        .form-container input, .form-container select, .form-container button {
+            width: 97%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid black;
+        }
+
+        .form-container button {
+            background-color: rgb(255, 230, 0);
+            color: white;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: rgb(255, 200, 0);
+        }
+
+        .footer {
+            padding: 10px;
+            text-align: center;
+            background-color: greenyellow;
+            color: gray;
+        }
+
+        .payment-details {
+            display: none; /* Oculto por defecto */
+            margin-bottom: 20px;
+        }
+
+        .payment-details.active {
+            display: block; /* Visible cuando es activo */
+        }
+
+        #total {
+            font-size: 1.5rem;
+            color: green;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    Pago de Productos
+</header>
+
+<div class="form-container">
+    <h2 style="text-align: center;">Formulario de Compra</h2>
+    <form id="payment-form" onsubmit="handleFormSubmit(event)">
+        <label for="name">Nombre completo:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">Correo electrónico:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="address">Dirección de envío:</label>
+        <input type="text" id="address" name="address" required>
+
+        <label for="product">Selecciona el producto:</label>
+        <select id="product" name="product" onchange="updateTotal()" required>
+            <option value="">Seleccione un producto</option>
+            <option value="100">Construcción - $100.00</option>
+            <option value="80">Pelota de fútbol - $80.00</option>
+            <option value="45.99">Sonajero - $45.99</option>
+            <option value="70">Sonajero Tradicional - $70.00</option>
+            <option value="250">Transporte de construcción - $250.00</option>
+        </select>
+
+        <label for="quantity">Cantidad de productos:</label>
+        <input type="number" id="quantity" name="quantity" value="1" min="1" onchange="updateTotal()" required>
+
+        <label for="payment-method">Método de pago:</label>
+        <select id="payment-method" name="payment-method" onchange="togglePaymentDetails()" required>
+            <option value="">Seleccione un método</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="tarjeta">Tarjeta Bancaria</option>
+        </select>
+
+        <!-- Detalles de la tarjeta -->
+        <div id="card-details" class="payment-details">
+            <label for="card-number">Número de tarjeta:</label>
+            <input type="text" id="card-number" name="card-number" placeholder="XXXX XXXX XXXX XXXX" maxlength="16" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" pattern="\d{16}" title="Debe contener exactamente 16 dígitos">
+
+            <label for="cvv">CVV:</label>
+            <input type="text" id="cvv" name="cvv" placeholder="XXX" maxlength="3" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" pattern="\d{3}" title="Debe contener exactamente 3 dígitos">
+
+            <label for="expiry">Fecha de vigencia:</label>
+            <input type="month" id="expiry" name="expiry">
+        </div>
+
+        <button type="button" onclick="addProduct()">Agregar producto</button>
+        <div id="total">Total a pagar: $0.00</div>
+
+        <button type="submit">Finalizar compra</button>
+    </form>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>&copy; 2024 El Niño Curioso | Todos los derechos reservados</p>
+    <p>Dirección: Av. Leyes de Reforma #19, Carlos A. Carrillo Centro, Carlos A. Carrillo, CP 95330</p>
+    <p>Teléfono:<br> <a href="tel:+522881088844">+52 288 108 88 44</a></p>
+    <p>Correo electrónico:<br> <a href="mailto:tmtrebook@gmail.com?subject=Consulta%20sobre%20productos&body=Hola,%20me%20gustaría%20saber%20más%20sobre%20los%20productos.">tmtrebook@gmail.com</a></p>
+</div>
+
+<script>
+    function togglePaymentDetails() {
+        const paymentMethod = document.getElementById('payment-method').value;
+        const cardDetails = document.getElementById('card-details');
+
+        // Campos de la tarjeta
+        const cardNumber = document.getElementById('card-number');
+        const cvv = document.getElementById('cvv');
+        const expiry = document.getElementById('expiry');
+
+        if (paymentMethod === 'tarjeta') {
+            cardDetails.classList.add('active'); // Mostrar la sección de tarjeta
+            cardNumber.setAttribute('required', 'true'); // Hacer obligatorio
+            cvv.setAttribute('required', 'true'); // Hacer obligatorio
+            expiry.setAttribute('required', 'true'); // Hacer obligatorio
+        } else {
+            cardDetails.classList.remove('active'); // Ocultar la sección de tarjeta
+            cardNumber.removeAttribute('required'); // Quitar obligatoriedad
+            cvv.removeAttribute('required'); // Quitar obligatoriedad
+            expiry.removeAttribute('required'); // Quitar obligatoriedad
+        }
+    }
+
+    let total = 0;
+
+    // Función para actualizar el total dinámicamente
+    function updateTotal() {
+        const productPrice = parseFloat(document.getElementById('product').value || 0);
+        const quantity = parseInt(document.getElementById('quantity').value || 1);
+        const currentTotal = productPrice * quantity;
+
+        document.getElementById('total').textContent = `Total a pagar: $${(total + currentTotal).toFixed(2)}`;
+    }
+
+    // Función para agregar el producto al total
+    function addProduct() {
+        const productPrice = parseFloat(document.getElementById('product').value || 0);
+        const quantity = parseInt(document.getElementById('quantity').value || 1);
+
+        if (productPrice > 0) {
+            total += productPrice * quantity;
+            document.getElementById('total').textContent = `Total a pagar: $${total.toFixed(2)}`;
+        } else {
+            alert('Seleccione un producto válido.');
+        }
+    }
+
+    // Función para manejar el envío del formulario
+    function handleFormSubmit(event) {
+        event.preventDefault(); // Evitar el comportamiento predeterminado
+        window.location.href = "Gracias por tu compra.html"; // Redirigir a la página de agradecimiento
+    }
+</script>
+
+</body>
+</html>
